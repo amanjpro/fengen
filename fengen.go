@@ -74,22 +74,24 @@ func main() {
 				e.ClearForSearch()
 				seval := evaluation.Evaluate(e.Position, pawncache)
 				qeval := e.Quiescence(-engine.MAX_INT, engine.MAX_INT, 0)
-				tokens := strings.Split(comments[i-1][0], " ")
-				scoreStr := strings.Split(tokens[0], "/")[0]
-				score, err := strconv.ParseFloat(scoreStr, 64)
-				if err != nil {
-					if strings.Contains(scoreStr, "M") {
-						continue // Not interested in near mate positions
-					}
-					panic(err)
-				}
-				if math.Abs(score) > 2000 {
-					continue // Not interested decided positions
-				}
-				if pos.Turn() == chess.Black {
-					score *= -1
-				}
 				if abs16(seval-qeval) <= limit {
+					tokens := strings.Split(comments[i-1][0], " ")
+					scoreStr := strings.Split(tokens[0], "/")[0]
+					score, err := strconv.ParseFloat(scoreStr, 64)
+					if err != nil {
+						if strings.Contains(scoreStr, "M") {
+							continue // Not interested in near mate positions
+						}
+						panic(err)
+					}
+					if math.Abs(score) > 2000 {
+						continue // Not interested decided positions
+					}
+					if pos.Turn() == chess.Black {
+						score *= -1
+						seval *= -1
+						qeval *= -1
+					}
 					fmt.Printf("%s;score:%f;eval:%d;qs:%d,outcome:%s\n", fen, score, seval, qeval, outcome)
 				}
 			}
