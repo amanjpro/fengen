@@ -1,5 +1,5 @@
 github.com/ajstarks/svgo v0.0.0-20200320125537-f189e35d30ca/go.mod h1:K08gAheRH3/J6wwsYMMT4xOr94bZjxIelGM0+d/wbFw=
+github.com/amanjpro/chess v1.6.1-0.20210906232359-64ec5b737239 h1:4d83r+wp2qZe93pqldcSBYtvBZeSPdLtWIVo4aBHatM=
+github.com/amanjpro/chess v1.6.1-0.20210906232359-64ec5b737239/go.mod h1:G1Ia534oQILOkKp/ieVRfS+Y5RirjVLzkzt7F6H1SEE=
 github.com/amanjpro/zahak v0.0.0-20210906064924-af9c3b3f1cbe h1:MWzhyfNVw9M36RQDvWQ9hR2pgcq2EncPY5ZNAqhSUtU=
 github.com/amanjpro/zahak v0.0.0-20210906064924-af9c3b3f1cbe/go.mod h1:2ojTe6q01PUliqdKFqYm87Dd51OSOSTOH7b/PmtG6OQ=
-github.com/notnil/chess v1.6.0 h1:pfaZcraWN0liK9ND2M4HA6e+5ZIBiyaauIdXxPGJTT0=
-github.com/notnil/chess v1.6.0/go.mod h1:cRuJUIBFq9Xki05TWHJxHYkC+fFpq45IWwk94DdlCrA=
