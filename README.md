@@ -11,7 +11,7 @@ FEN, or if it is too tactical discards it. Tactial positions are defined as:
 This utility is useful for extracting FENs from PGN databases to be used for
 tuning Hand-Crafted Evaluation terms, as well as training NNUE networks.
 
-## Output Foramt
+## Output Format
 
 FenGen writes the generated FENs into stdout, and the format is as follows:
 

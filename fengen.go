@@ -15,8 +15,6 @@ import (
 	"github.com/amanjpro/zahak/search"
 )
 
-const SEARCH_DEPTH = 10
-
 func main() {
 	lflag := flag.Int("limit", 0, "Maximum allowed difference between Quiescence Search result and Static Evaluation, the bigger it is the more tactical positions are included")
 	pflag := flag.String("paths", "", "Comma separated set of paths to PGN files")
@@ -27,12 +25,16 @@ func main() {
 	if len(paths) == 0 || *pflag == "" {
 		panic("At least the path of one PGN file is expected, none was given")
 	}
-	files := make([]*os.File, len(paths))
 
-	cache := engine.NewCache(32)
+	process(limit, paths)
+}
+
+func process(limit int16, paths []string) {
+	files := make([]*os.File, len(paths))
+	cache := engine.NewCache(1)
 	pawncache := evaluation.NewPawnCache(2)
 	runner := search.NewRunner(cache, pawncache, 1)
-	runner.AddTimeManager(search.NewTimeManager(time.Now(), 838838292838383, true, 0, 0, false))
+	runner.AddTimeManager(search.NewTimeManager(time.Now(), search.MAX_TIME, true, 0, 0, false))
 	e := runner.Engines[0]
 
 	for i, p := range paths {
