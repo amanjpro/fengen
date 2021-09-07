@@ -36,6 +36,7 @@ func process(limit int16, paths []string) {
 	runner := search.NewRunner(cache, pawncache, 1)
 	runner.AddTimeManager(search.NewTimeManager(time.Now(), search.MAX_TIME, true, 0, 0, false))
 	e := runner.Engines[0]
+	fenCounter := 0
 
 	for i, p := range paths {
 		f, err := os.Open(p)
@@ -81,8 +82,8 @@ func process(limit int16, paths []string) {
 					scoreStr := strings.Split(tokens[0], "/")[0]
 					score, err := strconv.ParseFloat(scoreStr, 64)
 					if err != nil {
-						if strings.Contains(scoreStr, "M") {
-							continue // Not interested in near mate positions
+						if scoreStr == "book" || strings.Contains(scoreStr, "M") {
+							continue // Not interested in near mate positions, or book moves
 						}
 						panic(err)
 					}
@@ -95,10 +96,12 @@ func process(limit int16, paths []string) {
 						qeval *= -1
 					}
 					fmt.Printf("%s;score:%f;eval:%d;qs:%d,outcome:%s\n", fen, score, seval, qeval, outcome)
+					fenCounter += 1
 				}
 			}
 		}
 	}
+	fmt.Fprintf(os.Stderr, "Wrote %d FENs\n", fenCounter)
 }
 
 func abs16(x int16) int16 {
