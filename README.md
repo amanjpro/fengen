@@ -1,14 +1,19 @@
 # FenGen
 
-A simple utility to extract FENs from PGN databases. It uses Zahak engine to
-decide wheather to keep a FEN or if it is too tactical discards it. Tactial
-position is defined as: `ABS(Quiescence Eval - Static Eval)` is bigger than the
-a threashold.
+A simple utility to extract FENs from PGN databases. It uses
+[Zahak](https://github.com/amanjpro/zahak) engine to decide wheather to keep a
+FEN, or if it is too tactical discards it. Tactial positions are defined as:
 
-This utility is useful for extracting FENs from PGN to be used for tuning
-Hand-Crafted Evaluation terms, as well as training NNUE networks.
+- `ABS(Quiescence Eval - Static Eval)` is bigger than a threashold (configurable).
+- Position is not in check
+- Position is not a checkmate
 
-The output is as follows:
+This utility is useful for extracting FENs from PGN databases to be used for
+tuning Hand-Crafted Evaluation terms, as well as training NNUE networks.
+
+## Output Foramt
+
+FenGen writes the generated FENs into stdout, and the format is as follows:
 
 ```
 $ ./fengen -limit 40 -paths ./self-play-1.pgn | head
@@ -24,12 +29,15 @@ rnbqkb1r/2pp1p1p/1p2pn2/P5p1/P7/N6N/1BPPPPPP/R2QKB1R b KQkq - 0 2;score:-0.55000
 2bqkn1r/2p2p1p/1p2p3/r2pP3/PbP1n1Q1/N4N2/1B1P1PPP/R3KB1R w KQk - 3 9;score:-0.940000;eval:27;qs:61,outcome:0.0
 ```
 
-The first part is the FEN, score is the score noted in the PGN comment of the
-move, the eval is the static eval, qs is the quiescence search result, outcome
-is the winner (0.0 black wins, 1.0 white wins, 0.5 is a draw). All of score,
-eval and quiescence score are from white's point of view.
+- The first part is the FEN
+- `score` is the score noted in the PGN comment of the move
+- `eval` is the static eval of the position
+- `qs` is the quiescence search result
+- `outcome` is the game output, (0.0 black wins, 1.0 white wins, 0.5 is a draw).
 
-Usage:
+All of `score`, `eval` and `qs` are from white's point of view.
+
+## Usage
 
 ```
 $ ./fengen -help
