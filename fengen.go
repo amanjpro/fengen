@@ -21,7 +21,7 @@ func main() {
 	flag.Parse()
 
 	limit := int16(*lflag)
-	paths := strings.Split(*pflag, "\n")
+	paths := strings.Split(*pflag, ",")
 	if len(paths) == 0 || *pflag == "" {
 		panic("At least the path of one PGN file is expected, none was given")
 	}
