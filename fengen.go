@@ -95,7 +95,7 @@ func process(limit int16, paths []string) {
 						seval *= -1
 						qeval *= -1
 					}
-					fmt.Printf("%s;score:%f;eval:%d;qs:%d,outcome:%s\n", fen, score, seval, qeval, outcome)
+					fmt.Printf("%s;score:%f;eval:%d;qs:%d;outcome:%s\n", fen, score, seval, qeval, outcome)
 					fenCounter += 1
 				}
 			}
