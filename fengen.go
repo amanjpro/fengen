@@ -93,6 +93,7 @@ func extractFens(game *chess.Game, limit int16) int {
 		runner.ClearForSearch()
 		e.ClearForSearch()
 		seval := evaluation.Evaluate(e.Position, pawncache)
+		e.SetStaticEvals(0, seval)
 		qeval := e.Quiescence(-engine.MAX_INT, engine.MAX_INT, 0)
 		if abs16(seval-qeval) <= limit {
 			tokens := strings.Split(comments[i-1][0], " ")
@@ -107,14 +108,13 @@ func extractFens(game *chess.Game, limit int16) int {
 			if math.Abs(score) > 2000 {
 				continue // Not interested decided positions
 			}
-			if pos.Turn() == chess.White { // The fen is resulted from black's previous move
+			if pos.Turn() == chess.White {
 				outcome = woutcome
 			} else {
 				outcome = boutcome
 			}
+			// The fen is resulted from black's previous move, the scores belong to the previous search
 			score *= -1
-			seval *= -1
-			qeval *= -1
 			fmt.Printf("%s;score:%f;eval:%d;qs:%d;outcome:%s\n", fen, score, seval, qeval, outcome)
 			fenCounter += 1
 		}
