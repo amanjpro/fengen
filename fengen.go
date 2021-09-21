@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"math"
 	"os"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -15,35 +17,71 @@ import (
 	"github.com/amanjpro/zahak/search"
 )
 
-var (
-	cache     = engine.NewCache(1)
-	pawncache = evaluation.NewPawnCache(2)
-	runner    = search.NewRunner(cache, pawncache, 1)
-	e         = runner.Engines[0]
+type (
+	threadData struct {
+		cache     *engine.Cache
+		pawncache *evaluation.PawnCache
+		runner    *search.Runner
+		e         *search.Engine
+	}
 )
 
+var ()
+
 func init() {
-	runner.AddTimeManager(search.NewTimeManager(time.Now(), search.MAX_TIME, true, 0, 0, false))
 }
 
 func main() {
 	lflag := flag.Int("limit", 0, "Maximum allowed difference between Quiescence Search result and Static Evaluation, the bigger it is the more tactical positions are included")
-	pflag := flag.String("paths", "", "Comma separated set of paths to PGN files")
+	iflag := flag.String("input", "", "Comma separated set of paths to PGN files")
+	oflag := flag.String("output", "", "Directory to write produced FENs in")
+	tflag := flag.Int("threas", runtime.NumCPU(), "Number of parallelism")
 	flag.Parse()
 
 	limit := int16(*lflag)
-	paths := strings.Split(*pflag, ",")
-	if len(paths) == 0 || *pflag == "" {
-		panic("At least the path of one PGN file is expected, none was given")
+	inputPaths := strings.Split(*iflag, ",")
+	if len(*iflag) == 0 || *iflag == "" {
+		fmt.Println("At least the path of one PGN file is expected, none was given")
+		os.Exit(1)
 	}
 
-	process(limit, paths)
+	if len(*oflag) == 0 || *oflag == "" {
+		fmt.Println("Output directory must be specified")
+		os.Exit(1)
+	}
+
+	run(limit, inputPaths, *oflag, *tflag)
 }
 
-func process(limit int16, paths []string) {
+func run(limit int16, paths []string, outputDir string, threads int) {
 	files := make([]*os.File, len(paths))
-	fenCounter := 0
+	channels := make([]chan *chess.Game, threads)
+	outputs := make([]*bufio.Writer, threads)
+	answer := make(chan int)
+	for i := 0; i < threads; i++ {
+		channels[i] = make(chan *chess.Game)
+		f, err := os.Create(fmt.Sprintf("%s%cpart-%d.epd", outputDir, os.PathSeparator, i+1))
+		if err != nil {
+			panic(err)
+		}
+		outputs[i] = bufio.NewWriter(f)
+		defer f.Sync()
+		defer f.Close()
 
+		c := engine.NewCache(1)
+		pc := evaluation.NewPawnCache(2)
+		r := search.NewRunner(c, pc, 1)
+		t := threadData{
+			cache:     c,
+			pawncache: pc,
+			runner:    r,
+			e:         r.Engines[0],
+		}
+		t.runner.AddTimeManager(search.NewTimeManager(time.Now(), search.MAX_TIME, true, 0, 0, false))
+		go t.process(limit, outputs[i], channels[i], answer)
+	}
+
+	nextThread := 0
 	for i, p := range paths {
 		f, err := os.Open(p)
 		files[i] = f
@@ -55,13 +93,29 @@ func process(limit int16, paths []string) {
 		scanner := chess.NewScanner(f)
 		for scanner.Scan() {
 			game := scanner.Next()
-			fenCounter += extractFens(game, limit)
+			channels[nextThread] <- game
+			nextThread = (nextThread + 1) % threads
 		}
+	}
+	for i := 0; i < threads; i++ {
+		close(channels[i])
+	}
+	fenCounter := 0
+	for i := 0; i < threads; i++ {
+		fenCounter += <-answer
 	}
 	fmt.Fprintf(os.Stderr, "Wrote %d FENs\n", fenCounter)
 }
 
-func extractFens(game *chess.Game, limit int16) int {
+func (t *threadData) process(limit int16, output *bufio.Writer, games chan *chess.Game, answer chan int) {
+	fenCounter := 0
+	for game := range games {
+		fenCounter += t.extractFens(game, limit, output)
+	}
+	answer <- fenCounter
+}
+
+func (t *threadData) extractFens(game *chess.Game, limit int16, out *bufio.Writer) int {
 	comments := game.Comments()
 	var outcome string
 	if game.Outcome() == chess.WhiteWon {
@@ -83,15 +137,15 @@ func extractFens(game *chess.Game, limit int16) int {
 		}
 		fen := pos.String()
 		g := engine.FromFen(fen)
-		e.Position = g.Position()
-		if e.Position.IsInCheck() {
+		t.e.Position = g.Position()
+		if t.e.Position.IsInCheck() {
 			continue // A position is in check? ignore it
 		}
-		runner.ClearForSearch()
-		e.ClearForSearch()
-		seval := evaluation.Evaluate(e.Position, pawncache)
-		e.SetStaticEvals(0, seval)
-		qeval := e.Quiescence(-engine.MAX_INT, engine.MAX_INT, 0)
+		t.runner.ClearForSearch()
+		t.e.ClearForSearch()
+		seval := evaluation.Evaluate(t.e.Position, t.pawncache)
+		t.e.SetStaticEvals(0, seval)
+		qeval := t.e.Quiescence(-engine.MAX_INT, engine.MAX_INT, 0)
 		if abs16(seval-qeval) <= limit {
 			tokens := strings.Split(comments[i-1][0], " ")
 			scoreStr := strings.Split(tokens[0], "/")[0]
@@ -113,10 +167,16 @@ func extractFens(game *chess.Game, limit int16) int {
 				seval *= -1
 				qeval *= -1
 			}
-			fmt.Printf("%s;score:%d;eval:%d;qs:%d;outcome:%s\n", fen, int(score*100), seval, qeval, outcome)
+			line := fmt.Sprintf("%s;score:%d;eval:%d;qs:%d;outcome:%s\n", fen, int(score*100), seval, qeval, outcome)
+			_, err = out.WriteString(line)
+			if err != nil {
+				panic(err)
+			}
 			fenCounter += 1
 		}
 	}
+
+	out.Flush()
 
 	return fenCounter
 }
