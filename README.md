@@ -33,9 +33,9 @@ rnbqkb1r/2pp1p1p/1p2pn2/P5p1/P7/N6N/1BPPPPPP/R2QKB1R b KQkq - 0 2;score:-0.55000
 - `score` is the score noted in the PGN comment of the move
 - `eval` is the static eval of the position
 - `qs` is the quiescence search result
-- `outcome` is the game output, (0.0 side to move loses, 1.0 side to move wins, 0.5 is a draw).
+- `outcome` is the game output, (0.0 white loses, 1.white wins, 0.5 is a draw).
 
-All of `score`, `eval` and `qs` are from side to move's point of view.
+All of `score`, `eval` and `qs` are from white's point of view.
 
 ## Usage
 

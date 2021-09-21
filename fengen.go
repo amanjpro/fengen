@@ -63,16 +63,13 @@ func process(limit int16, paths []string) {
 
 func extractFens(game *chess.Game, limit int16) int {
 	comments := game.Comments()
-	var woutcome, boutcome, outcome string
+	var outcome string
 	if game.Outcome() == chess.WhiteWon {
-		woutcome = "1.0"
-		boutcome = "0.0"
+		outcome = "1.0"
 	} else if game.Outcome() == chess.BlackWon {
-		woutcome = "0.0"
-		boutcome = "1.0"
+		outcome = "0.0"
 	} else if game.Outcome() == chess.Draw {
-		woutcome = "0.5"
-		boutcome = "0.5"
+		outcome = "0.5"
 	} else {
 		return 0 // no outcome? go to the next game
 	}
@@ -108,14 +105,15 @@ func extractFens(game *chess.Game, limit int16) int {
 			if math.Abs(score) > 2000 {
 				continue // Not interested decided positions
 			}
+			// Last move was black's move, i.e. black has reported the scores
+			// To convert it into white's point of view, we need to negate the scores
 			if pos.Turn() == chess.White {
-				outcome = woutcome
+				score *= -1
 			} else {
-				outcome = boutcome
+				seval *= -1
+				qeval *= -1
 			}
-			// The fen is resulted from black's previous move, the scores belong to the previous search
-			score *= -1
-			fmt.Printf("%s;score:%f;eval:%d;qs:%d;outcome:%s\n", fen, score, seval, qeval, outcome)
+			fmt.Printf("%s;score:%d;eval:%d;qs:%d;outcome:%s\n", fen, int(score*100), seval, qeval, outcome)
 			fenCounter += 1
 		}
 	}
