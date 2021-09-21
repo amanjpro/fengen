@@ -42,8 +42,12 @@ All of `score`, `eval` and `qs` are from white's point of view.
 ```
 $ ./fengen -help
 Usage of ./fengen:
+  -input string
+    Comma separated set of paths to PGN files
   -limit int
     Maximum allowed difference between Quiescence Search result and Static Evaluation, the bigger it is the more tactical positions are included
-  -paths string
-    Comma separated set of paths to PGN files
+  -output string
+    Directory to write produced FENs in
+  -threas int
+    Number of parallelism (default 8)
 ```
