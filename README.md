@@ -16,17 +16,18 @@ tuning Hand-Crafted Evaluation terms, as well as training NNUE networks.
 FenGen writes the generated FENs into stdout, and the format is as follows:
 
 ```
-$ ./fengen -limit 40 -paths ./self-play-1.pgn | head
-rnbqkb1r/2pp1p1p/1p2pn2/p5p1/PP6/N6N/1BPPPPPP/R2QKB1R w KQkq - 2 2;score:-0.450000;eval:-6;qs:5,outcome:0.0
-rnbqkb1r/2pp1p1p/1p2pn2/P5p1/P7/N6N/1BPPPPPP/R2QKB1R b KQkq - 0 2;score:-0.550000;eval:-19;qs:-57,outcome:0.0
-1nbqkb1r/2pp1p1p/1p2pn2/r5p1/P3P3/N6N/1BPP1PPP/R2QKB1R b KQk e3 0 3;score:-0.350000;eval:-31;qs:0,outcome:0.0
-1nbqkb1r/2pp1p1p/1p2pn2/r7/P3P1p1/N6N/1BPP1PPP/R2QKB1R w KQk - 0 4;score:-0.380000;eval:-35;qs:0,outcome:0.0
-1nbqkb1r/2pp1p1p/1p2pn2/r7/P3P1p1/N7/1BPP1PPP/R2QKBNR b KQk - 1 4;score:-0.090000;eval:-65;qs:-70,outcome:0.0
-1nbqkb1r/2p2p1p/1p2p3/r2pP3/P3n1Q1/N7/1BPP1PPP/R3KBNR b KQk - 0 6;score:0.200000;eval:-9;qs:-29,outcome:0.0
-2bqkb1r/2pn1p1p/1p2p3/r2pP3/P3n1Q1/N7/1BPP1PPP/R3KBNR w KQk - 1 7;score:0.020000;eval:-38;qs:0,outcome:0.0
-2bqkb1r/2pn1p1p/1p2p3/r2pP3/P1P1n1Q1/N7/1B1P1PPP/R3KBNR b KQk c3 0 7;score:0.220000;eval:-38;qs:0,outcome:0.0
-2bqk2r/2pn1p1p/1p2p3/r2pP3/PbP1n1Q1/N4N2/1B1P1PPP/R3KB1R b KQk - 2 8;score:-0.970000;eval:12;qs:0,outcome:0.0
-2bqkn1r/2p2p1p/1p2p3/r2pP3/PbP1n1Q1/N4N2/1B1P1PPP/R3KB1R w KQk - 3 9;score:-0.940000;eval:27;qs:61,outcome:0.0
+$ ./fengen -limit 40 -input ./self-play-1.pgn -output /tmp
+$ cat /tmp/part-1.epd | head
+1n1qkb1r/r2b1p2/4pn1p/p2p4/2pP1BpP/2P1P3/1PN2PP1/RN1QKB1R b KQk - 1 11;score:-31;eval:25;qs:25;outcome:0.5
+r5kr/1p3ppp/1p6/1P1p4/3P2P1/qP5P/3NPP2/2RQK2R w K - 0 16;score:459;eval:449;qs:449;outcome:1.0
+8/1r2p1k1/2Nnn1pp/R7/8/5NPP/5PK1/8 b - - 6 38;score:32;eval:12;qs:12;outcome:0.5
+r3k1r1/1p6/2p1pb1p/2P2p2/p2P1P2/4P1P1/PP1B1K1P/1R2R3 w q - 2 27;score:188;eval:164;qs:164;outcome:1.0
+6R1/pp6/1k4P1/r7/5K2/2p4P/8/8 w - - 2 54;score:-94;eval:-88;qs:-88;outcome:0.0
+8/5k2/8/4p2p/4P3/2r2PP1/2p2K2/2R5 w - - 0 53;score:-123;eval:-112;qs:-112;outcome:0.5
+8/3k1n2/1K5p/7R/6P1/8/8/8 b - - 3 55;score:315;eval:306;qs:306;outcome:0.5
+8/6R1/8/5K2/5p2/2r2k2/8/8 w - - 4 67;score:-193;eval:-154;qs:-154;outcome:0.0
+r2qkbr1/ppp1pb2/2n2n2/3pP2p/P2P2p1/2PQ2P1/1P1N1PB1/R1B1K1NR b KQq - 0 9;score:87;eval:-1;qs:-1;outcome:0.5
+5rk1/R4pp1/5n1p/1r6/1bqp1P2/4PK1P/3P2P1/1N2Q1NR w - - 0 23;score:-98;eval:-145;qs:-145;outcome:0.0
 ```
 
 - The first part is the FEN

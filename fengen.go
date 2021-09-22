@@ -26,11 +26,6 @@ type (
 	}
 )
 
-var ()
-
-func init() {
-}
-
 func main() {
 	lflag := flag.Int("limit", 0, "Maximum allowed difference between Quiescence Search result and Static Evaluation, the bigger it is the more tactical positions are included")
 	iflag := flag.String("input", "", "Comma separated set of paths to PGN files")
