@@ -151,9 +151,6 @@ func (t *threadData) extractFens(game *chess.Game, limit int16, out *bufio.Write
 				}
 				panic(err)
 			}
-			if math.Abs(score) > 2000 {
-				continue // Not interested decided positions
-			}
 			// Last move was black's move, i.e. black has reported the scores
 			// To convert it into white's point of view, we need to negate the scores
 			if pos.Turn() == chess.White {
