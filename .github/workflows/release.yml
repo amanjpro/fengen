@@ -20,9 +20,9 @@ jobs:
       - name: Distribute
         run: |
           mkdir bin
-          GOOS=linux GOARCH=amd64 go build -o bin ./... && mv bin/zahak bin/fengen-linux-amd64-"$TAG_NAME"
-          GOOS=darwin GOARCH=amd64 go build -o bin ./... && mv bin/zahak bin/fengen-darwin-amd64-"$TAG_NAME"
-          GOOS=windows GOARCH=amd64 go build -o bin ./... && mv bin/zahak.exe bin/fengen-windows-amd64-"$TAG_NAME".exe
+          GOOS=linux GOARCH=amd64 go build -o bin ./... && mv bin/fengen bin/fengen-linux-amd64-"$TAG_NAME"
+          GOOS=darwin GOARCH=amd64 go build -o bin ./... && mv bin/fengen bin/fengen-darwin-amd64-"$TAG_NAME"
+          GOOS=windows GOARCH=amd64 go build -o bin ./... && mv bin/fengen.exe bin/fengen-windows-amd64-"$TAG_NAME".exe
       - name: Create Release and Upload Assets
         id: create-release-and-upload-asset
         run: |
