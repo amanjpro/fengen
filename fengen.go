@@ -53,7 +53,7 @@ func run(limit int16, paths []string, outputDir string, threads int) {
 	outputs := make([]*bufio.Writer, threads)
 	answer := make(chan int)
 	for i := 0; i < threads; i++ {
-		channels[i] = make(chan *chess.Game)
+		channels[i] = make(chan *chess.Game, 100)
 		f, err := os.Create(fmt.Sprintf("%s%cpart-%d.epd", outputDir, os.PathSeparator, i+1))
 		if err != nil {
 			panic(err)
