@@ -162,7 +162,11 @@ func (t *threadData) extractFens(game *chess.Game, limit int16, out *bufio.Write
 		qeval := t.e.Quiescence(-engine.MAX_INT, engine.MAX_INT, 0)
 		if abs16(seval-qeval) <= limit {
 			tokens := strings.Split(comments[i-1][0], " ")
-			scoreStr := strings.Split(tokens[0], "/")[0]
+			commentParts := strings.Split(tokens[0], "/")
+			if len(commentParts) == 1 {
+				continue
+			}
+			scoreStr := commentParts[0]
 			score, err := strconv.ParseFloat(scoreStr, 64)
 			if err != nil {
 				if scoreStr == "book" || strings.Contains(scoreStr, "M") {
