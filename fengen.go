@@ -26,28 +26,37 @@ type (
 )
 
 func main() {
-	lflag := flag.Int("limit", 0, "Maximum allowed difference between Quiescence Search result and Static Evaluation, the bigger it is the more tactical positions are included")
-	iflag := flag.String("input", "", "Comma separated set of paths to PGN files")
-	oflag := flag.String("output", "", "Directory to write produced FENs in")
-	tflag := flag.Int("threas", runtime.NumCPU(), "Number of parallelism")
+	limitFlag := flag.Int("limit", 0, "Maximum allowed difference between Quiescence Search result and Static Evaluation, the bigger it is the more tactical positions are included")
+	inputFlag := flag.String("input", "", "Comma separated set of paths to PGN files")
+	outputFlag := flag.String("output", "", "Directory to write produced FENs in")
+	threadsFlag := flag.Int("threads", runtime.NumCPU(), "Number of threads")
+	ignoreFlag := flag.String("ignore", "", "Ignore the moves of engines, you can list more than one separated by commas")
 	flag.Parse()
 
-	limit := int16(*lflag)
-	inputPaths := strings.Split(*iflag, ",")
-	if len(*iflag) == 0 || *iflag == "" {
+	limit := int16(*limitFlag)
+	inputPaths := strings.Split(*inputFlag, ",")
+	if len(*inputFlag) == 0 || *inputFlag == "" {
 		fmt.Println("At least the path of one PGN file is expected, none was given")
 		os.Exit(1)
 	}
 
-	if len(*oflag) == 0 || *oflag == "" {
+	if len(*outputFlag) == 0 || *outputFlag == "" {
 		fmt.Println("Output directory must be specified")
 		os.Exit(1)
 	}
 
-	run(limit, inputPaths, *oflag, *tflag)
+	ignorePlayersArray := strings.Split(*ignoreFlag, ",")
+	var dummy struct{}
+	ignorePlayers := make(map[string]struct{}, len(ignorePlayersArray))
+	for i := 0; i < len(ignorePlayers); i++ {
+		key := strings.TrimSpace(ignorePlayersArray[i])
+		ignorePlayers[key] = dummy
+	}
+
+	run(limit, inputPaths, *outputFlag, *threadsFlag, ignorePlayers)
 }
 
-func run(limit int16, paths []string, outputDir string, threads int) {
+func run(limit int16, paths []string, outputDir string, threads int, ignorePlayers map[string]struct{}) {
 	files := make([]*os.File, len(paths))
 	channels := make([]chan *chess.Game, threads)
 	outputs := make([]*bufio.Writer, threads)
@@ -72,7 +81,7 @@ func run(limit int16, paths []string, outputDir string, threads int) {
 			e:         r.Engines[0],
 		}
 		t.runner.AddTimeManager(search.NewTimeManager(time.Now(), search.MAX_TIME, true, 0, 0, false))
-		go t.process(limit, outputs[i], channels[i], answer)
+		go t.process(limit, outputs[i], ignorePlayers, channels[i], answer)
 	}
 
 	nextThread := 0
@@ -101,15 +110,15 @@ func run(limit int16, paths []string, outputDir string, threads int) {
 	fmt.Fprintf(os.Stderr, "Wrote %d FENs\n", fenCounter)
 }
 
-func (t *threadData) process(limit int16, output *bufio.Writer, games chan *chess.Game, answer chan int) {
+func (t *threadData) process(limit int16, output *bufio.Writer, ignorePlayers map[string]struct{}, games chan *chess.Game, answer chan int) {
 	fenCounter := 0
 	for game := range games {
-		fenCounter += t.extractFens(game, limit, output)
+		fenCounter += t.extractFens(game, limit, output, ignorePlayers)
 	}
 	answer <- fenCounter
 }
 
-func (t *threadData) extractFens(game *chess.Game, limit int16, out *bufio.Writer) int {
+func (t *threadData) extractFens(game *chess.Game, limit int16, out *bufio.Writer, ignorePlayers map[string]struct{}) int {
 	comments := game.Comments()
 	var outcome string
 	if game.Outcome() == chess.WhiteWon {
@@ -121,6 +130,8 @@ func (t *threadData) extractFens(game *chess.Game, limit int16, out *bufio.Write
 	} else {
 		return 0 // no outcome? go to the next game
 	}
+	whitePlayer := game.GetTagPair("White").Value
+	blackPlayer := game.GetTagPair("Black").Value
 	fenCounter := 0
 	for i, pos := range game.Positions() {
 		if i == 0 {
@@ -128,6 +139,15 @@ func (t *threadData) extractFens(game *chess.Game, limit int16, out *bufio.Write
 		}
 		if i == len(game.Positions()) && game.Method() == chess.Checkmate {
 			continue // ignore checkamte positions
+		}
+		if pos.Turn() == chess.Black { // We are currently seeing the position after white's move
+			if _, ok := ignorePlayers[whitePlayer]; ok {
+				continue
+			}
+		} else {
+			if _, ok := ignorePlayers[blackPlayer]; ok {
+				continue
+			}
 		}
 		fen := pos.String()
 		g := engine.FromFen(fen)
