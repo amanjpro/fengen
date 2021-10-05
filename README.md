@@ -43,12 +43,14 @@ All of `score`, `eval` and `qs` are from white's point of view.
 ```
 $ ./fengen -help
 Usage of ./fengen:
+  -ignore string
+    Ignore the moves of engines, you can list more than one separated by commas
   -input string
     Comma separated set of paths to PGN files
   -limit int
     Maximum allowed difference between Quiescence Search result and Static Evaluation, the bigger it is the more tactical positions are included
   -output string
     Directory to write produced FENs in
-  -threas int
-    Number of parallelism (default 8)
+  -threads int
+    Number of threads (default 16)
 ```
